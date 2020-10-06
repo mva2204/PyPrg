@@ -4,7 +4,7 @@ import time
 import numpy as np
 
 from PyQt5 import QtWidgets
-from PyQt5.QtWidgets import QApplication, QMainWindow, QShortcut
+from PyQt5.QtWidgets import QApplication, QMainWindow, QShortcut, QFileDialog
 from PyQt5 import QtCore, QtGui
 from PyQt5.QtGui import QFont, QKeySequence
 
@@ -22,7 +22,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         QMainWindow.__init__(self)
         self.setupUi(self)
 
-        #
+        #Создаем диалог открытия файла
+        self.BtnOpenFile.clicked.connect(self.open_file)
+
+
         self.fig = plot_graph_smart()
         self.companovka_for_mpl = QtWidgets.QVBoxLayout(self.widget)
         self.canavas = MplCanvas(self.fig)
@@ -67,6 +70,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         time.sleep(0.5)
         self.jake.answer_the_question()
         self.Main_text_window.setText(str(self.jake.bot_dialog_memory))
+
+    def open_file(self):
+        self.file_name = QtWidgets.QFileDialog.getOpenFileName(None, "Open", "", "CSV Files (*.csv)")
+        if self.file_name[0] != '':
+            self.label_path_openfile.setText(self.file_name[0])
 
 def main():
 
