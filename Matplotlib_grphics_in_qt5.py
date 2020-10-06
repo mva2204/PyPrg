@@ -4,7 +4,8 @@ import time
 import numpy as np
 
 from PyQt5 import QtWidgets
-from PyQt5.QtWidgets import QApplication, QMainWindow, QShortcut, QFileDialog
+from PyQt5.QtCore import QAbstractTableModel, Qt
+from PyQt5.QtWidgets import QApplication, QMainWindow, QShortcut, QFileDialog, QTableView, QWidget
 from PyQt5 import QtCore, QtGui
 from PyQt5.QtGui import QFont, QKeySequence
 
@@ -15,7 +16,11 @@ from  MyGraphics import plot_graph_smart
 
 from  MplForWidget import MplCanvas
 from matplotlib.backends.backend_qt5 import NavigationToolbar2QT as NavigationToolbar
+import pandas as pd
 
+df1 = pd.DataFrame({'a': ['Mary', 'Jim', 'John'],
+                   'b': [100, 200, 300],
+                   'c': ['a', 'b', 'c']})
 
 class MainWindow(QMainWindow, Ui_MainWindow):
     def __init__(self):
@@ -25,6 +30,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         #Создаем диалог открытия файла
         self.BtnOpenFile.clicked.connect(self.open_file)
 
+        self.df1Model = PandasModel(df1)
+        self.tableView.setModel(self.df1Model)
 
         self.fig = plot_graph_smart()
         self.companovka_for_mpl = QtWidgets.QVBoxLayout(self.widget)
@@ -72,9 +79,47 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.Main_text_window.setText(str(self.jake.bot_dialog_memory))
 
     def open_file(self):
-        self.file_name = QtWidgets.QFileDialog.getOpenFileName(None, "Open", "", "CSV Files (*.csv)")
+        self.file_name = QtWidgets.QFileDialog.getOpenFileName(None, "Open", "", "XLSX Files (*.xlsx);;CSV Files (*.csv);;All Files (*)")
         if self.file_name[0] != '':
+            print(self.file_name[0])
             self.label_path_openfile.setText(self.file_name[0])
+#            xl = pd.read_excel(self.file_name[0])
+            xlsx = pd.ExcelFile(self.file_name[0])
+            df = pd.read_excel(xlsx)
+
+            print('Sheet name:{0}'.format(xlsx.sheet_names))
+            print('заголовок:{0}'.format(df.head()))
+            print('Строки-Столбцы: {0}'.format(df.shape))
+            print('Sheet name:{0} \n'.format(df.columns[1]))
+            print('две перывые строки: {0}'.format(df[:2]))
+            print('ячейка 1, 0: {0}'.format(df.iloc[[1],[0]]))
+            model = PandasModel(df)
+            print('model: {0}'.format(model))
+            self.tableView.setModel(model)
+
+
+class PandasModel(QAbstractTableModel):
+
+    def __init__(self, data):
+        QAbstractTableModel.__init__(self)
+        self._data = data
+
+    def rowCount(self, parent=None):
+        return self._data.shape[0]
+
+    def columnCount(self, parnet=None):
+        return self._data.shape[1]
+
+    def data(self, index, role=Qt.DisplayRole):
+        if index.isValid():
+            if role == Qt.DisplayRole:
+                return str(self._data.iloc[index.row(), index.column()])
+        return None
+
+    def headerData(self, col, orientation, role):
+        if orientation == Qt.Horizontal and role == Qt.DisplayRole:
+            return self._data.columns[col]
+        return None
 
 def main():
 
