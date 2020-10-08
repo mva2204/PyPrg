@@ -133,11 +133,15 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         model = PandasModel(self.df)
         self.tableView.setModel(model)
         self.tableView.update()
+        th = Thread(target=self.func)
+        th.start()
+
+    def func(self):
         for index, row in self.df.iterrows():
             is_valid = validate_email(self.df.iat[index, 0], verify=True)
             self.df.iat[index, 1] = is_valid
             print("Проверка email: {0} - {1} - {2}".format(index, self.df.iat[index, 1], is_valid))
-            self.label_state.setText("{0} из {1}".format(index, self.df.count()))
+            self.label_state.setText("{0} из {1}".format(index, len(self.df.index)-1))
             model = PandasModel(self.df)
             self.tableView.setModel(model)
             self.tableView.update()
