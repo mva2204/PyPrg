@@ -17,21 +17,27 @@ from  MyGraphics import plot_graph_smart
 from  MplForWidget import MplCanvas
 from matplotlib.backends.backend_qt5 import NavigationToolbar2QT as NavigationToolbar
 import pandas as pd
+from email_validator import validate_email, EmailNotValidError
 
-df1 = pd.DataFrame({'a': ['Mary', 'Jim', 'John'],
-                   'b': [100, 200, 300],
-                   'c': ['a', 'b', 'c']})
+
+#df1 = pd.DataFrame({'a': ['Mary', 'Jim', 'John'],
+#                   'b': [100, 200, 300],
+#                   'c': ['a', 'b', 'c']})
 
 class MainWindow(QMainWindow, Ui_MainWindow):
     def __init__(self):
         QMainWindow.__init__(self)
         self.setupUi(self)
 
+        self.df = pd.DataFrame
         #Создаем диалог открытия файла
         self.BtnOpenFile.clicked.connect(self.open_file)
 
-        self.df1Model = PandasModel(df1)
-        self.tableView.setModel(self.df1Model)
+        #Создаем диалог открытия файла
+ #       self.pushButton_update.clicked.connect(self.validate(self.df))
+
+ #       self.df1Model = PandasModel(df1)
+ #       self.tableView.setModel(self.df1Model)
 
         self.fig = plot_graph_smart()
         self.companovka_for_mpl = QtWidgets.QVBoxLayout(self.widget)
@@ -85,17 +91,40 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.label_path_openfile.setText(self.file_name[0])
 #            xl = pd.read_excel(self.file_name[0])
             xlsx = pd.ExcelFile(self.file_name[0])
-            df = pd.read_excel(xlsx)
+            self.df = pd.read_excel(xlsx)
 
             print('Sheet name:{0}'.format(xlsx.sheet_names))
-            print('заголовок:{0}'.format(df.head()))
-            print('Строки-Столбцы: {0}'.format(df.shape))
-            print('Sheet name:{0} \n'.format(df.columns[1]))
-            print('две перывые строки: {0}'.format(df[:2]))
-            print('ячейка 1, 0: {0}'.format(df.iloc[[1],[0]]))
-            model = PandasModel(df)
+            print('заголовок:{0}'.format(self.df.head()))
+            print('Строки-Столбцы: {0}'.format(self.df.shape))
+#            print('Sheet name:{0} \n'.format(df.columns[1]))
+            print('две перывые строки: {0}'.format(self.df[:2]))
+            print('ячейка 1, 0: {0}'.format(self.df.iloc[[3],[0]]))
+#            for index, row in df.iterrows():
+#                print(row['c1'], row['c2'])
+            cell = self.df.iat[5,0]
+            print('ячейка : {0}'.format(cell))
+
+            print('DF : {0}'.format(self.df))
+            model = PandasModel(self.df)
             print('model: {0}'.format(model))
             self.tableView.setModel(model)
+
+
+    def validate(self, email):
+#        self.df.drop(2)
+        model = PandasModel(self.df)
+        print('model: {0}'.format(model))
+        self.tableView.setModel(model)
+
+        try:
+            # Validate.
+            valid = validate_email(email)
+
+            # Update with the normalized form.
+            email = valid.email
+        except EmailNotValidError as e:
+            # email is not valid, exception message is human-readable
+            print(str(e))
 
 
 class PandasModel(QAbstractTableModel):

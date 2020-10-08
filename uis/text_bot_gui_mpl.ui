@@ -113,7 +113,24 @@
     <item>
      <layout class="QVBoxLayout" name="verticalLayout_3">
       <item>
-       <widget class="QTableView" name="tableView"/>
+       <widget class="QTableView" name="tableView">
+        <property name="mouseTracking">
+         <bool>true</bool>
+        </property>
+        <property name="tabletTracking">
+         <bool>true</bool>
+        </property>
+        <property name="acceptDrops">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="label_state">
+        <property name="text">
+         <string>TextLabel</string>
+        </property>
+       </widget>
       </item>
       <item>
        <widget class="QLabel" name="label_path_openfile">
@@ -125,11 +142,25 @@
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout_3">
         <item>
+         <widget class="QPushButton" name="pushButton_update">
+          <property name="text">
+           <string>Обработать</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="pushButton_save">
+          <property name="text">
+           <string>Сохранить</string>
+          </property>
+         </widget>
+        </item>
+        <item>
          <widget class="QPushButton" name="BtnOpenFile">
           <property name="maximumSize">
            <size>
-            <width>100</width>
-            <height>40</height>
+            <width>16777215</width>
+            <height>16777215</height>
            </size>
           </property>
           <property name="text">
