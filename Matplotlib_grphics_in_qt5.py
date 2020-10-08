@@ -17,7 +17,10 @@ from  MyGraphics import plot_graph_smart
 from  MplForWidget import MplCanvas
 from matplotlib.backends.backend_qt5 import NavigationToolbar2QT as NavigationToolbar
 import pandas as pd
-from email_validator import validate_email, EmailNotValidError
+
+from validate_email import validate_email
+from threading import Thread
+
 
 
 #df1 = pd.DataFrame({'a': ['Mary', 'Jim', 'John'],
@@ -30,14 +33,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.setupUi(self)
 
         self.df = pd.DataFrame
-        #Создаем диалог открытия файла
-        self.BtnOpenFile.clicked.connect(self.open_file)
-
-        #Создаем диалог открытия файла
- #       self.pushButton_update.clicked.connect(self.validate(self.df))
-
- #       self.df1Model = PandasModel(df1)
- #       self.tableView.setModel(self.df1Model)
 
         self.fig = plot_graph_smart()
         self.companovka_for_mpl = QtWidgets.QVBoxLayout(self.widget)
@@ -46,6 +41,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.toolbar = NavigationToolbar(self.canavas, self)
         self.companovka_for_mpl.addWidget(self.toolbar)
 
+        # Обработка нажатий на TableView
+        self.tableView.clicked.connect(self.clickedTableView)
+        self.tableView.viewportEntered.connect(self.clickedTableView)
 
         self.jake = TextBot('...')
         self.jake.answer_the_question()
@@ -59,7 +57,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.label.setText('Bot:'+self.jake.bot_name)
 
 #        self.isSignalConnected(self.pushButton, PYQT_SIGNAL('clicked()'), self.show_answer())
+        #Создаем диалог открытия файла
+        self.BtnOpenFile.clicked.connect(self.open_file)
         self.pushButton.clicked.connect(self.show_answer)
+        self.pushButton_update.clicked.connect(self.validate)
+        self.path = 'valid.xlsx'
+        self.pushButton_save.clicked.connect(self.save_table_to_excel)
+
         #Ctrl+Enter  QtCore.Qt.CTRL+QtCore.Qt.Key_Return)
         shortcut = QShortcut(QKeySequence(QtCore.Qt.CTRL+QtCore.Qt.Key_Return), self.input_text_line)
         shortcut.activated.connect(self.show_answer)
@@ -68,6 +72,17 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.horizontalSlider.valueChanged.connect(self.lcdNumber.display)
 
+    #Обработка нажатий на TableView
+    def clickedTableView(self):
+        indexes = self.tableView.selectionModel().selectedIndexes()
+        for index in sorted(indexes):
+            #так только  номер выделлной строки TableView видно
+            # self.label_state.setText(str(index.row()))
+
+            #Устанавливаем текст из выделеной ячейки в значение Lable
+            self.label_state.setText(self.tableView.model().index(index.row(),0).data())
+
+            print('Row %d is selected' % index.row())
 
     def font_resize(self, value):
         self.font.setPointSize(value)
@@ -102,6 +117,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 #            for index, row in df.iterrows():
 #                print(row['c1'], row['c2'])
             cell = self.df.iat[5,0]
+
+            for index, row in self.df.iterrows():
+                self.label_state.setText(self.df.iat[index,0])
             print('ячейка : {0}'.format(cell))
 
             print('DF : {0}'.format(self.df))
@@ -111,20 +129,28 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
 
     def validate(self, email):
-#        self.df.drop(2)
+        self.df['Validate'] = False
         model = PandasModel(self.df)
-        print('model: {0}'.format(model))
         self.tableView.setModel(model)
+        self.tableView.update()
+        for index, row in self.df.iterrows():
+            is_valid = validate_email(self.df.iat[index, 0], verify=True)
+            self.df.iat[index, 1] = is_valid
+            print("Проверка email: {0} - {1} - {2}".format(index, self.df.iat[index, 1], is_valid))
+            self.label_state.setText("{0} из {1}".format(index, self.df.count()))
+            model = PandasModel(self.df)
+            self.tableView.setModel(model)
+            self.tableView.update()
 
-        try:
-            # Validate.
-            valid = validate_email(email)
+    def save_table_to_excel(self):
+        # Specify a writer
+        writer = pd.ExcelWriter(self.path, engine='xlsxwriter')
 
-            # Update with the normalized form.
-            email = valid.email
-        except EmailNotValidError as e:
-            # email is not valid, exception message is human-readable
-            print(str(e))
+        # Write your DataFrame to a file
+        self.df.to_excel(writer, 'Валидные email')
+
+        # Save the result
+        writer.save()
 
 
 class PandasModel(QAbstractTableModel):

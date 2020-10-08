@@ -142,6 +142,13 @@
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout_3">
         <item>
+         <widget class="QProgressBar" name="progressBar_valid_email">
+          <property name="value">
+           <number>24</number>
+          </property>
+         </widget>
+        </item>
+        <item>
          <widget class="QPushButton" name="pushButton_update">
           <property name="text">
            <string>Обработать</string>
