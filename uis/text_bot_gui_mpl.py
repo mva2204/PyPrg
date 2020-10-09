@@ -39,6 +39,9 @@ class Ui_MainWindow(object):
         self.verticalLayout.addWidget(self.input_text_line)
         self.horizontalLayout_2 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_2.setObjectName("horizontalLayout_2")
+        self.pushButton_map = QtWidgets.QPushButton(self.centralwidget)
+        self.pushButton_map.setObjectName("pushButton_map")
+        self.horizontalLayout_2.addWidget(self.pushButton_map)
         self.pushButton = QtWidgets.QPushButton(self.centralwidget)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Minimum)
         sizePolicy.setHorizontalStretch(0)
@@ -110,6 +113,7 @@ class Ui_MainWindow(object):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
         self.label.setText(_translate("MainWindow", "TextBot"))
+        self.pushButton_map.setText(_translate("MainWindow", "Обработать MAP"))
         self.pushButton.setText(_translate("MainWindow", "Ответ"))
         self.label_state.setText(_translate("MainWindow", "TextLabel"))
         self.label_path_openfile.setText(_translate("MainWindow", "TextLabel"))

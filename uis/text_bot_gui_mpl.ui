@@ -52,6 +52,13 @@
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout_2">
         <item>
+         <widget class="QPushButton" name="pushButton_map">
+          <property name="text">
+           <string>Обработать MAP</string>
+          </property>
+         </widget>
+        </item>
+        <item>
          <widget class="QPushButton" name="pushButton">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
@@ -141,13 +148,6 @@
       </item>
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout_3">
-        <item>
-         <widget class="QProgressBar" name="progressBar_valid_email">
-          <property name="value">
-           <number>24</number>
-          </property>
-         </widget>
-        </item>
         <item>
          <widget class="QPushButton" name="pushButton_update">
           <property name="text">
