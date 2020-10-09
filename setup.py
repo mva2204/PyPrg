@@ -10,7 +10,7 @@ if sys.platform == "win32":
     base = "Win32GUI"
 
 executables = [
-    Executable('hello_world_qt.py', base=base)
+    Executable('Matplotlib_grphics_in_qt5.py', base=base)
 ]
 
 setup(

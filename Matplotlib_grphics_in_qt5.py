@@ -1,7 +1,7 @@
 # -- coding: utf-8 --
 import sys
 import time
-import numpy as np
+#import numpy as np
 
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import QAbstractTableModel, Qt
@@ -43,7 +43,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         # Обработка нажатий на TableView
         self.tableView.clicked.connect(self.clickedTableView)
-        self.tableView.viewportEntered.connect(self.clickedTableView)
+#        self.tableView.viewportEntered.connect(self.clickedTableView)
 
         self.jake = TextBot('...')
         self.jake.answer_the_question()
@@ -188,7 +188,6 @@ def main():
     main = MainWindow()
     main.show()
     sys.exit(app.exec_())
-#    plot_graph_smart()
 
 main()
 
