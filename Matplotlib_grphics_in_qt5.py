@@ -4,11 +4,11 @@ import time
 #import numpy as np
 
 from PyQt5 import QtWidgets
-from PyQt5.QtCore import QAbstractTableModel, Qt
-from PyQt5.QtWidgets import QApplication, QMainWindow, QShortcut, QFileDialog, QTableView, QWidget, QMessageBox
+from PyQt5.QtCore import QAbstractTableModel, Qt, QThread, pyqtSignal
+from PyQt5.QtWidgets import QApplication, QMainWindow, QShortcut, QFileDialog, QTableView, QWidget, QMessageBox, QLabel
 from PyQt5 import QtCore, QtGui
 from PyQt5.QtGui import QFont, QKeySequence
-
+from pandas import DataFrame
 
 from uis.text_bot_gui_mpl import Ui_MainWindow
 from my_bot import TextBot
@@ -59,7 +59,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         #Создаем диалог открытия файла
         self.BtnOpenFile.clicked.connect(self.open_file)
         self.pushButton.clicked.connect(self.show_answer)
-        self.pushButton_update.clicked.connect(self.validate)
+# Это рабочая функция без QThread       self.pushButton_update.clicked.connect(self.validate)
+        self.pushButton_update.clicked.connect(self.launch_valid_email)
         self.pushButton_map.clicked.connect(self.fun_map)
         self.path = 'valid.xlsx'
         self.pushButton_save.clicked.connect(self.save_table_to_excel)
@@ -72,6 +73,24 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.horizontalSlider.valueChanged.connect(self.lcdNumber.display)
 
+    def launch_valid_email(self):
+        self.index = 0
+        self.ProgressValidEmail = ValidEmailThread(self.df, self.index, self.label_state)
+        self.ProgressValidEmail.update_valid_email.connect(self.update_valid_email)
+        self.ProgressValidEmail.finish_valid_email.connect(self.finish_valid_email)
+        self.ProgressValidEmail.start()
+#        self.pushbutton.setEnabled(False)
+
+    def update_valid_email(self, df, index):
+#        if index > 0:
+        self.label_state.setText("{0} из {1}".format(index, len(df.index) - 1))
+        model = PandasModel(df)
+        self.tableView.setModel(model)
+        self.tableView.update()
+
+    def finish_valid_email(self):
+        self.save_table_to_excel()
+
     #b Обработка закрытия окна
     def closeEvent(self, event):
         #close = QMessageBox()
@@ -83,8 +102,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         #    event.accept()
         #else:
         #    event.ignore()
-        if MainWindow.th:
-            self.th.join()
+ #       if MainWindow.th:
+ #           self.th.join()
+        pass
 
     def fun_map(self):
         # Using lambda function we first convert all
@@ -175,16 +195,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 #        function1.start(self.df)
 #        function1.get_index_cur()
 
-
-
-    def fun_lamda(self):
-        is_valid = validate_email(self.df.iat[index, 0], verify=True)
-        self.df.iat[index, 1] = is_valid
-        print("Проверка email: {0} - {1} - {2} - {3} из {4}".format(self.df.iat[index, 0], index, self.df.iat[index, 1],
-                                                                    is_valid, len(self.df.index) - 1))
-        # Количество строк DataFrame len(self.df.index)-1
-        self.label_state.setText("{0} из {1}".format(index, len(self.df.index) - 1))
-
         #Поток валидации email
     def func(self):
         if len(self.df.index) > 1:
@@ -219,6 +229,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # Save the result
         writer.save()
 
+#Пока не работает
+    def fun_lamda(self):
+        is_valid = validate_email(self.df.iat[self.index, 0], verify=True)
+        self.df.iat[self.index, 1] = is_valid
+        print("Проверка email: {0} - {1} - {2} - {3} из {4}".format(self.df.iat[self.index, 0], self.index, self.df.iat[self.index, 1],
+                                                                    is_valid, len(self.df.index) - 1))
+        # Количество строк DataFrame len(self.df.index)-1
+        self.label_state.setText("{0} из {1}".format(self.index, len(self.df.index) - 1))
 
 class PandasModel(QAbstractTableModel):
 
@@ -243,6 +261,37 @@ class PandasModel(QAbstractTableModel):
             return self._data.columns[col]
         return None
 
+
+#Класс поток обработки valid_email
+class ValidEmailThread(QThread):
+
+    update_valid_email = pyqtSignal(DataFrame, int, QLabel)
+    finish_valid_email = pyqtSignal()
+
+    def __init__(self, df, index, lable_state, paren = None):
+        super().__init__()
+        self.df = df
+        self.index = index
+        self.lable_state = lable_state
+
+    def run(self):
+        self.df['Validate'] = False
+        self.startTime = datetime.now()
+        if len(self.df.index) > 1:
+            for index, row in self.df.iterrows():
+                self.index = index
+                is_valid = validate_email(self.df.iat[index, 0], verify=True, smtp_timeout=3, check_mx=True)
+                self.df.iat[index, 1] = is_valid
+                self.update_valid_email.emit(self.df, self.index, self.lable_state)
+                print("Проверка email: {0} - {1} - {2} - {3} из {4}".format(self.df.iat[index, 0], index,
+                                                                            self.df.iat[index, 1], is_valid,
+                                                                            len(self.df.index) - 1))
+#                self.label_state.setText("{0} из {1}".format(index, len(self.df.index)-1))
+        self.endTime = datetime.now()
+        print("Конец выполнения: {0}".format(self.endTime))
+        print("Время выполнения: {0}".format(self.endTime - self.startTime))
+#        self.save_table_to_excel()
+        self.finish_valid_email.emit()
 
 def main():
 

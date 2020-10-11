@@ -13,8 +13,7 @@ class ProgressBarThread(QThread):
         self.value = value
 
     def run(self):
-        value = 0
-        while value < 100:
+        while self.value < 100:
             self.value += 1
             self.update_progressbar.emit(self.value)
             QThread.msleep(200) #time.sleep(0.2)
