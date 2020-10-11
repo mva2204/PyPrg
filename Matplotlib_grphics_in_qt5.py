@@ -72,7 +72,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.horizontalSlider.valueChanged.connect(self.lcdNumber.display)
 
-    #Обработка закрытия окна
+    #b Обработка закрытия окна
     def closeEvent(self, event):
         #close = QMessageBox()
         #close.setText("You sure?")
@@ -192,6 +192,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 is_valid = validate_email(self.df.iat[index, 0], verify=True)
                 self.df.iat[index, 1] = is_valid
                 print("Проверка email: {0} - {1} - {2} - {3} из {4}".format(self.df.iat[index, 0],index, self.df.iat[index, 1], is_valid, len(self.df.index)-1))
+    #            self.Main_text_window.setText("Проверка email: {0} - {1} - {2} - {3} из {4}".format(self.df.iat[index, 0],index, self.df.iat[index, 1], is_valid, len(self.df.index)-1))
                 #Количество строк DataFrame len(self.df.index)-1
                 self.label_state.setText("{0} из {1}".format(index, len(self.df.index)-1))
     #            model = PandasModel(self.df)
