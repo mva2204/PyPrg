@@ -32,7 +32,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.setupUi(self)
 
         self.df = pd.DataFrame
-
         self.fig = plot_graph_smart()
         self.companovka_for_mpl = QtWidgets.QVBoxLayout(self.widget)
         self.canavas = MplCanvas(self.fig)
@@ -52,7 +51,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.input_text_line.setFocus()
         self.horizontalSlider.setMaximum(10)
         self.horizontalSlider.setMaximum(30)
-        self.label.setGeometry(QtCore.QRect(150,70,70,50))
+        self.label.setGeometry(QtCore.QRect(70,70,70,50))
         self.label.setText('Bot:'+self.jake.bot_name)
 
 #        self.isSignalConnected(self.pushButton, PYQT_SIGNAL('clicked()'), self.show_answer())
@@ -75,7 +74,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def launch_valid_email(self):
         self.index = 0
-        self.ProgressValidEmail = ValidEmailThread(self.df, self.index, self.label_state)
+        self.text_log = ''
+        self.ProgressValidEmail = ValidEmailThread(self.df, self.index)
         self.ProgressValidEmail.update_valid_email.connect(self.update_valid_email)
         self.ProgressValidEmail.finish_valid_email.connect(self.finish_valid_email)
         self.ProgressValidEmail.start()
@@ -84,9 +84,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def update_valid_email(self, df, index):
 #        if index > 0:
         self.label_state.setText("{0} из {1}".format(index, len(df.index) - 1))
+        # Запись перевода на новую строку и ответа в log память бота
+        self.text_log = "Проверка email: {0} - {1} - {2} из {3}".format(df.iat[index, 0], df.iat[index, 1], index, len(df.index)-1) + '\n' + self.text_log
+        self.Main_text_window.setText(self.text_log)
+        self.Main_text_window.ensureCursorVisible()
         model = PandasModel(df)
         self.tableView.setModel(model)
         self.tableView.update()
+
 
     def finish_valid_email(self):
         self.save_table_to_excel()
@@ -179,7 +184,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
 
     def validate(self, email):
-        self.df['Validate'] = False
+        self.df['Validate'] = "False"
         df_list = list(self.df)
         print("list len: {0}".format(len(df_list)))
         for i in range(len(df_list)):
@@ -200,7 +205,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if len(self.df.index) > 1:
             for index, row in self.df.iterrows():
                 is_valid = validate_email(self.df.iat[index, 0], verify=True)
-                self.df.iat[index, 1] = is_valid
                 print("Проверка email: {0} - {1} - {2} - {3} из {4}".format(self.df.iat[index, 0],index, self.df.iat[index, 1], is_valid, len(self.df.index)-1))
     #            self.Main_text_window.setText("Проверка email: {0} - {1} - {2} - {3} из {4}".format(self.df.iat[index, 0],index, self.df.iat[index, 1], is_valid, len(self.df.index)-1))
                 #Количество строк DataFrame len(self.df.index)-1
@@ -265,32 +269,44 @@ class PandasModel(QAbstractTableModel):
 #Класс поток обработки valid_email
 class ValidEmailThread(QThread):
 
-    update_valid_email = pyqtSignal(DataFrame, int, QLabel)
+    update_valid_email = pyqtSignal(DataFrame, int)
     finish_valid_email = pyqtSignal()
 
-    def __init__(self, df, index, lable_state, paren = None):
+    def __init__(self, df, index, paren = None):
         super().__init__()
         self.df = df
         self.index = index
-        self.lable_state = lable_state
 
     def run(self):
-        self.df['Validate'] = False
+        self.df['Validate'] = "False"
         self.startTime = datetime.now()
         if len(self.df.index) > 1:
-            for index, row in self.df.iterrows():
-                self.index = index
-                is_valid = validate_email(self.df.iat[index, 0], verify=True, smtp_timeout=3, check_mx=True)
-                self.df.iat[index, 1] = is_valid
-                self.update_valid_email.emit(self.df, self.index, self.lable_state)
-                print("Проверка email: {0} - {1} - {2} - {3} из {4}".format(self.df.iat[index, 0], index,
-                                                                            self.df.iat[index, 1], is_valid,
+            for k, row in self.df.iterrows():
+                self.is_valid = validate_email(self.df.iat[k, 0], verify=True, smtp_timeout=5, check_mx=True)
+                print("valid = {0}-{1}".format(self.is_valid, type(self.is_valid)))
+                if self.is_valid is None:
+                    self.df.iat[k, 1] = "None"
+                elif self.is_valid:
+                    self.df.iat[k, 1] = "Валидный"
+                else:
+                    self.df.iat[k, 1] = "Невалидный"
+#                self.df.iat[k, 1] = self.is_valid
+                self.index = k
+                self.update_valid_email.emit(self.df, self.index)
+                print("Проверка email: {0} - {1} - {2} - {3} из {4}".format(self.df.iat[k, 0], k,
+                                                                            self.df.iat[k, 1], self.is_valid,
                                                                             len(self.df.index) - 1))
-#                self.label_state.setText("{0} из {1}".format(index, len(self.df.index)-1))
+
+#        for self.index, row in self.df.iterrows():
+#            self.is_valid = validate_email(self.df.iat[self.index, 0], verify=True, smtp_timeout=3, check_mx=True)
+#            self.df.iat[self.index, 1] = self.is_valid
+#            self.update_valid_email.emit(self.df, self.index, self.is_valid)
+#            print("Проверка email: {0} - {1} - {2} - {3} из {4}".format(self.df.iat[self.index, 0], self.index,
+#                                                                        self.df.iat[self.index, 1], self.is_valid,
+#                                                                        len(self.df.index) - 1))
         self.endTime = datetime.now()
         print("Конец выполнения: {0}".format(self.endTime))
         print("Время выполнения: {0}".format(self.endTime - self.startTime))
-#        self.save_table_to_excel()
         self.finish_valid_email.emit()
 
 def main():
