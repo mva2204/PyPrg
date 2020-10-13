@@ -30,7 +30,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def __init__(self):
         QMainWindow.__init__(self)
         self.setupUi(self)
-
         self.df = pd.DataFrame
         self.fig = plot_graph_smart()
         self.companovka_for_mpl = QtWidgets.QVBoxLayout(self.widget)
@@ -83,6 +82,16 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def update_valid_email(self, df, index):
 #        if index > 0:
+#            self.valid_count = 0
+#            self.novalid_count = 0
+#            for k, row in self.df.iterrows():
+#                print(type(df.iat[k, 1]))
+#                if df.iat[k, 1] is True:
+#                    self.valid_count += 1
+#                else:
+#                    self.novalid_count += 1
+#            self.text_log = "Валидные={0}. Не валидых={1} ".format(self.valid_count, self.novalid_count) + '\n' + self.text_log
+
         self.label_state.setText("{0} из {1}".format(index, len(df.index) - 1))
         # Запись перевода на новую строку и ответа в log память бота
         self.text_log = "Проверка email: {0} - {1} - {2} из {3}".format(df.iat[index, 0], df.iat[index, 1], index, len(df.index)-1) + '\n' + self.text_log
@@ -283,7 +292,7 @@ class ValidEmailThread(QThread):
         if len(self.df.index) > 1:
             for k, row in self.df.iterrows():
                 self.is_valid = validate_email(self.df.iat[k, 0], verify=True, smtp_timeout=5, check_mx=True)
-                print("valid = {0}-{1}".format(self.is_valid, type(self.is_valid)))
+#                print("valid = {0}-{1}".format(self.is_valid, type(self.is_valid)))
                 self.df.iat[k, 1] = self.is_valid
                 self.index = k
                 self.update_valid_email.emit(self.df, self.index)
