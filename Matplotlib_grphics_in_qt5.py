@@ -278,19 +278,13 @@ class ValidEmailThread(QThread):
         self.index = index
 
     def run(self):
-        self.df['Validate'] = "False"
+        self.df['Validate'] = False
         self.startTime = datetime.now()
         if len(self.df.index) > 1:
             for k, row in self.df.iterrows():
                 self.is_valid = validate_email(self.df.iat[k, 0], verify=True, smtp_timeout=5, check_mx=True)
                 print("valid = {0}-{1}".format(self.is_valid, type(self.is_valid)))
-                if self.is_valid is None:
-                    self.df.iat[k, 1] = "None"
-                elif self.is_valid:
-                    self.df.iat[k, 1] = "Валидный"
-                else:
-                    self.df.iat[k, 1] = "Невалидный"
-#                self.df.iat[k, 1] = self.is_valid
+                self.df.iat[k, 1] = self.is_valid
                 self.index = k
                 self.update_valid_email.emit(self.df, self.index)
                 print("Проверка email: {0} - {1} - {2} - {3} из {4}".format(self.df.iat[k, 0], k,
