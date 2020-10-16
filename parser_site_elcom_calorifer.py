@@ -41,15 +41,29 @@ def save_to_excel(ws, wb, list_catalog_number = [], list_feauture = [], list_pru
 
     for x in range(1,len(list_catalog_number)):
         ws.write(j, 0, list_catalog_number[x])
+        ws.write(j, 1, list_feauture[x])
         st = list_feauture[x]
-        ws.write(j, 1, re.findall(r'Производитель(.*?)Выход. мощность, ВА', st))
-        ws.write(j, 2, re.findall(r'Выход. мощность, ВА(.*?)Исполнение', st))
-        ws.write(j, 3, re.findall(r'Исполнение(.*$)', st))
-        ws.write(j, 4, list_pruduct[x])
-        # ws.write(j, 5, list_price_discount[x])
-        ws.write(j, 6, catalog_item_price[x])
-        ws.write(j, 7, list_img[x])
+        #Чтобы в тексте скобки не воспринимались как регулярные выражения нужно перед скобакми и слешами ставить \
+        ws.write(j, 4, re.findall(r'Источник тепла(.*?)Тепл. мощность \(кВт\)', st))
+        ws.write(j, 5, re.findall(r'Тепл. мощность \(кВт\)(.*?)Напряжение \(В\)', st))
+        ws.write(j, 6, re.findall(r'Напряжение \(В\)(.*?)Ном. ток в фазе \(A\)', st))
+        ws.write(j, 7, re.findall(r'Ном. ток в фазе \(A\)(.*?)Производительность', st))
+        ws.write(j, 8, re.findall(r'Производительность \(не менее, м3\/ч\)(.*?)Габариты \(ш/в/г, мм\)', st))
+        ws.write(j, 9, re.findall(r'Габариты \(ш/в/г, мм\)(.*$)', st))
+#        ws.write(j, 7, list_feauture[x])
+        ws.write(j, 2, catalog_item_price[x])
+        ws.write(j, 3, list_img[x])
         j += 1
+    # ws.write(0, 0, "Каталожный номер")
+    # ws.write(0, 1, "Описание")
+    # ws.write(0, 2, "Цена каталог руб")
+    # ws.write(0, 3, "Картинка")
+    # ws.write(0, 4, "Источник тепла")
+    # ws.write(0, 5, "Тепл. мощность (кВт)")
+    # ws.write(0, 6, "Напряжение (В)")
+    # ws.write(0, 7, "Ном. ток в фазе (A)")
+    # ws.write(0, 8, "Производительность (не менее, м3/ч)")
+    # ws.write(0, 9, "Габариты (ш/в/г, мм)")
 
     wb.save(path)
 
@@ -76,10 +90,10 @@ def get_data(soup, tag, atrtag):
 def get_link(ws, wb, html, icur = 1):
     soup = BeautifulSoup(html, 'lxml')
 
-    list_catalog_number = get_data(soup, 'div', "catalog-item__code")
+    list_catalog_number = get_data(soup, 'div', "caption")
     print(list_catalog_number)
 
-    list_feauture = get_data(soup, 'ul', "catalog-item__feature")
+    list_feauture = get_data(soup, 'div', "attrs-block")
     print(list_feauture)
 
     list_pruduct = get_data(soup, 'div', "catalog-item__title")
@@ -92,11 +106,11 @@ def get_link(ws, wb, html, icur = 1):
     list_ul= get_data(soup, 'div', "wrap-pagination")
     print(list_ul)
 
-    catalog_item_price= get_data(soup, 'span', "catalog-item-price__val")
+    catalog_item_price= get_data(soup, 'div', "price")
     print(catalog_item_price)
 
     soup_img = BeautifulSoup(html, 'html.parser')
-    data_img = soup_img.find_all('div', {"class": "catalog-item-top"})
+    data_img = soup_img.find_all('div', {"class": "image"})
     # data_img = get_data(soup_img, 'div', "catalog-item-top")
     # print(data_img)
     list_img = []
@@ -127,48 +141,23 @@ def get_link(ws, wb, html, icur = 1):
 #dks data = get_link(get_html('https://www.tesli.com/catalog/ibp/istochniki-bespereboynogo-pitaniya/?display_type=tile&set_filter=Показать&arrFilter_P1_MIN=1970&arrFilter_P1_MAX=8292697&arrFilter_208_1955232490=DKC&1458992227='))
 #data = get_link(get_html('https://www.tesli.com/catalog/ibp/istochniki-bespereboynogo-pitaniya/?sort=price&display_type=tile&0=&1=&set_filter=Показать&arrFilter_P1_MIN=1970&arrFilter_P1_MAX=8292697&arrFilter_208_1955232490=DKC&arrFilter_208_4171867725=EATON&arrFilter_208_1597891823=Schneider+Electric&1458992227='))
 wb = xlwt.Workbook()
-ws = wb.add_sheet('ДКС')#, cell_overwrite_ok=True)
-path = 'DKS.xlsx'
+ws = wb.add_sheet('ПУШКИ', cell_overwrite_ok=True)
+path = 'Elcom pushki.xlsx'
 ws.write(0, 0, "Каталожный номер")
-ws.write(0, 1, "Производитель")
-ws.write(0, 2, "Выход. мощность, ВА")
-ws.write(0, 3, "Исполнение")
-ws.write(0, 4, "Описание")
-ws.write(0, 5, "Персональная цена, Руб")
-ws.write(0, 6, "Цена по каталогу, Руб")
-ws.write(0, 7, "Картинки")
+ws.write(0, 1, "Описание")
+ws.write(0, 2, "Цена каталог руб")
+ws.write(0, 3, "Картинка")
+ws.write(0, 4, "Источник тепла")
+ws.write(0, 5, "Тепл. мощность (кВт)")
+ws.write(0, 6, "Напряжение (В)")
+ws.write(0, 7, "Ном. ток в фазе (A)")
+ws.write(0, 8, "Производительность (не менее, м3/ч)")
+ws.write(0, 9, "Габариты (ш/в/г, мм)")
 
-
-
+adr = 1
 icuri = 1
-leni = get_link(ws, wb, get_html('https://www.tesli.com/catalog/ibp/istochniki-bespereboynogo-pitaniya/on-line/?PAGEN_1=1'), icuri)
-
-icuri = icuri + leni
-leni = get_link(ws, wb, get_html('https://www.tesli.com/catalog/ibp/istochniki-bespereboynogo-pitaniya/on-line/?PAGEN_1=2'), icuri)
-
-icuri = icuri + leni
-leni = get_link(ws, wb, get_html('https://www.tesli.com/catalog/ibp/istochniki-bespereboynogo-pitaniya/on-line/?PAGEN_1=3'), icuri)
-
-icuri = icuri + leni
-leni = get_link(ws, wb, get_html('https://www.tesli.com/catalog/ibp/istochniki-bespereboynogo-pitaniya/on-line/?PAGEN_1=4'), icuri)
-
-icuri = icuri + leni
-leni = get_link(ws, wb, get_html('https://www.tesli.com/catalog/ibp/istochniki-bespereboynogo-pitaniya/on-line/?PAGEN_1=5'), icuri)
-
-icuri = icuri + leni
-leni = get_link(ws, wb, get_html('https://www.tesli.com/catalog/ibp/istochniki-bespereboynogo-pitaniya/on-line/?PAGEN_1=6'), icuri)
-
-icuri = icuri + leni
-leni = get_link(ws, wb, get_html('https://www.tesli.com/catalog/ibp/istochniki-bespereboynogo-pitaniya/on-line/?PAGEN_1=7'), icuri)
-
-icuri = icuri + leni
-leni = get_link(ws, wb, get_html('https://www.tesli.com/catalog/ibp/istochniki-bespereboynogo-pitaniya/on-line/?PAGEN_1=8'), icuri)
-
-icuri = icuri + leni
-leni = get_link(ws, wb, get_html('https://www.tesli.com/catalog/ibp/istochniki-bespereboynogo-pitaniya/on-line/?PAGEN_1=9'), icuri)
-
-icuri = icuri + leni
-leni = get_link(ws, wb, get_html('https://www.tesli.com/catalog/ibp/istochniki-bespereboynogo-pitaniya/on-line/?PAGEN_1=10'), icuri)
-
-icuri = icuri + leni
-leni = get_link(ws, wb, get_html('https://www.tesli.com/catalog/ibp/istochniki-bespereboynogo-pitaniya/on-line/?PAGEN_1=11'), icuri)
+while adr <= 14:
+    leni = get_link(ws, wb, get_html('https://www.elcomspb.ru/retail/thermotechnics/heaters/?page='+str(adr)), icuri)
+    adr = adr + 1
+    icuri = icuri + leni
+    print('https://www.elcomspb.ru/retail/thermotechnics/heaters/?page='+str(adr))
