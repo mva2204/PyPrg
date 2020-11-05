@@ -6,12 +6,15 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1082</width>
-    <height>803</height>
+    <width>1126</width>
+    <height>852</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>MainWindow</string>
+  </property>
+  <property name="documentMode">
+   <bool>false</bool>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QHBoxLayout" name="horizontalLayout">
@@ -148,8 +151,11 @@
             <verstretch>0</verstretch>
            </sizepolicy>
           </property>
+          <property name="toolTip">
+           <string comment="Проверяет только существования домена почтового ящика" extracomment="Проверяет только существования домена почтового ящика (отметить)"/>
+          </property>
           <property name="text">
-           <string>check_mx_SMTP</string>
+           <string extracomment="Проверяет только существования домена почтового ящика">check_mx_SMTP</string>
           </property>
           <property name="checked">
            <bool>true</bool>
@@ -158,8 +164,11 @@
         </item>
         <item>
          <widget class="QCheckBox" name="checkBox_verify">
+          <property name="toolTip">
+           <string comment="Проверяет существования домена и почтового ящика SMTP" extracomment="Проверяет существования домена и почтового ящика SMTP(отметить)"/>
+          </property>
           <property name="text">
-           <string>verify_SMTP_Email</string>
+           <string extracomment="Проверяет существования домена и почтового ящика SMTP">verify_SMTP_Email</string>
           </property>
           <property name="checked">
            <bool>true</bool>
@@ -222,7 +231,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1082</width>
+     <width>1126</width>
      <height>21</height>
     </rect>
    </property>

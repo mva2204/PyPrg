@@ -193,6 +193,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             print('model: {0}'.format(self.model))
             self.tableView.setModel(self.model)
             #Формируем наименование файла для сохранения валидации
+            #Выделить из пути имя файла без расширения os.path.splitext(os.path.basename(self.file_name[0]))[0]
             self.path = 'Valid_'+os.path.splitext(os.path.basename(self.file_name[0]))[0]+'.xlsx'
             print(self.path)
 
@@ -266,7 +267,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             print('toggle=`{}`, unchecked_{}'.format(toggle, check))
 
         s1 = checkBox.text()
-        s = re.sub(r'_\d', '', s1)
+        s = re.sub(r'_True|_False', '', s1)
         checkBox.setText("{0}_{1}".format(s, check))
         # checkBox_check_mx.setText("check_mx_{0}".format(self.check_mx))
         # if no == 2:
