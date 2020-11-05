@@ -86,6 +86,7 @@ class Ui_MainWindow(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.checkBox_check_mx.sizePolicy().hasHeightForWidth())
         self.checkBox_check_mx.setSizePolicy(sizePolicy)
+        self.checkBox_check_mx.setChecked(True)
         self.checkBox_check_mx.setObjectName("checkBox_check_mx")
         self.horizontalLayout_4.addWidget(self.checkBox_check_mx)
         self.checkBox_verify = QtWidgets.QCheckBox(self.centralwidget)

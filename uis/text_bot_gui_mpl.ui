@@ -151,6 +151,9 @@
           <property name="text">
            <string>check_mx_SMTP</string>
           </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
          </widget>
         </item>
         <item>

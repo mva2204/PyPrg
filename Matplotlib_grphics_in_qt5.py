@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import sys
 import time
+import os
 #import numpy as np
 
 from PyQt5 import QtWidgets
@@ -30,8 +31,8 @@ import re
 class MainWindow(QMainWindow, Ui_MainWindow):
     def __init__(self):
         QMainWindow.__init__(self)
-        self.check_mx = 0 #Провекра домменого имени 1=отмечена
-        self.check_verify = 0#Проверка почтового адреса 1=отмечена
+        self.check_mx = True #Провекра домменого имени 1=отмечена
+        self.check_verify = True#Проверка почтового адреса 1=отмечена
         self.setupUi(self)
         self.df = pd.DataFrame
         self.fig = plot_graph_smart()
@@ -85,6 +86,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # check_mx Checking domain has SMTP Server
         # check_verify Check if the host has SMTP Server and the email really exists:
         self.ProgressValidEmail = ValidEmailThread(self.df, self.index, self.check_mx, self.check_verify)
+        print('{}-{}'.format(self.check_mx,self.check_verify))
         self.ProgressValidEmail.update_valid_email.connect(self.update_valid_email)
         self.ProgressValidEmail.finish_valid_email.connect(self.finish_valid_email)
         self.ProgressValidEmail.start()
@@ -190,6 +192,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.model = PandasModel(self.df)
             print('model: {0}'.format(self.model))
             self.tableView.setModel(self.model)
+            #Формируем наименование файла для сохранения валидации
+            self.path = 'Valid_'+os.path.splitext(os.path.basename(self.file_name[0]))[0]+'.xlsx'
+            print(self.path)
+
 
 
     def validate(self, email):
@@ -215,12 +221,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             for index, row in self.df.iterrows():
                 is_valid = validate_email(self.df.iat[index, 0], verify=True)
                 print("Проверка email: {0} - {1} - {2} - {3} из {4}".format(self.df.iat[index, 0],index, self.df.iat[index, 1], is_valid, len(self.df.index)-1))
-    #            self.Main_text_window.setText("Проверка email: {0} - {1} - {2} - {3} из {4}".format(self.df.iat[index, 0],index, self.df.iat[index, 1], is_valid, len(self.df.index)-1))
-                #Количество строк DataFrame len(self.df.index)-1
+                 #Количество строк DataFrame len(self.df.index)-1
                 self.label_state.setText("{0} из {1}".format(index, len(self.df.index)-1))
-    #            model = PandasModel(self.df)
-    #            self.tableView.setModel(model)
-    #            self.tableView.update()
         self.endTime = datetime.now()
         print("Конец выполнения: {0}".format(self.endTime))
         print("Время выполнения: {0}".format(self.endTime-self.startTime))
@@ -257,10 +259,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if toggle:# == QtCore.Qt.Checked:
             print('toggle=`{}`, checked'.format(toggle))
             # if no == 1:
-            check = 1
+            check = True
             print('checked_{} -> галочка поставлена выполнилось действие'.format(check))
         else:
-            check = 0
+            check = False
             print('toggle=`{}`, unchecked_{}'.format(toggle, check))
 
         s1 = checkBox.text()
