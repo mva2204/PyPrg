@@ -152,7 +152,7 @@
            </sizepolicy>
           </property>
           <property name="toolTip">
-           <string comment="Проверяет только существования домена почтового ящика" extracomment="Проверяет только существования домена почтового ящика (отметить)"/>
+           <string>Проверяет только существования домена почтового ящика</string>
           </property>
           <property name="text">
            <string extracomment="Проверяет только существования домена почтового ящика">check_mx_SMTP</string>
@@ -165,7 +165,7 @@
         <item>
          <widget class="QCheckBox" name="checkBox_verify">
           <property name="toolTip">
-           <string comment="Проверяет существования домена и почтового ящика SMTP" extracomment="Проверяет существования домена и почтового ящика SMTP(отметить)"/>
+           <string>Проверяет существования домена и почтового ящика SMTP</string>
           </property>
           <property name="text">
            <string extracomment="Проверяет существования домена и почтового ящика SMTP">verify_SMTP_Email</string>
