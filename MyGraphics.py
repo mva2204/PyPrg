@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import matplotlib as mpl
-import math
 import numpy as np
 from matplotlib import pyplot as plt
 

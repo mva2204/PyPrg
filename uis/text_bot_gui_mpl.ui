@@ -142,15 +142,21 @@
         </property>
         <item>
          <widget class="QCheckBox" name="checkBox_check_mx">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+            <horstretch>5</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
           <property name="text">
-           <string>check_mx</string>
+           <string>check_mx_SMTP</string>
           </property>
          </widget>
         </item>
         <item>
          <widget class="QCheckBox" name="checkBox_verify">
           <property name="text">
-           <string>verify</string>
+           <string>verify_SMTP_Email</string>
           </property>
           <property name="checked">
            <bool>true</bool>

@@ -17,10 +17,11 @@ from  MyGraphics import plot_graph_smart
 from  MplForWidget import MplCanvas
 from matplotlib.backends.backend_qt5 import NavigationToolbar2QT as NavigationToolbar
 import pandas as pd
-from Valid_Email_Thread import function1
+# from Valid_Email_Thread import function1
 from datetime import datetime
 from validate_email import validate_email
 from threading import Thread
+import re
 
 #df1 = pd.DataFrame({'a': ['Mary', 'Jim', 'John'],
 #                   'b': [100, 200, 300],
@@ -29,6 +30,8 @@ from threading import Thread
 class MainWindow(QMainWindow, Ui_MainWindow):
     def __init__(self):
         QMainWindow.__init__(self)
+        self.check_mx = 0 #Провекра домменого имени 1=отмечена
+        self.check_verify = 0#Проверка почтового адреса 1=отмечена
         self.setupUi(self)
         self.df = pd.DataFrame
         self.fig = plot_graph_smart()
@@ -71,27 +74,23 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.horizontalSlider.valueChanged.connect(self.lcdNumber.display)
 
+        self.checkBox_check_mx.stateChanged.connect(lambda : self.selectBooks(self.check_mx, self.checkBox_check_mx))
+        self.checkBox_verify.stateChanged.connect(lambda : self.selectBooks(self.check_verify, self.checkBox_verify))
+        # self.checkBox_verify.stateChanged.connect(
+        #     lambda state=self.checkBox_verify.isChecked(), no=2: self.selectBooks(state, no, self.checkBox_verify))
+
     def launch_valid_email(self):
         self.index = 0
         self.text_log = ''
-        self.ProgressValidEmail = ValidEmailThread(self.df, self.index)
+        # check_mx Checking domain has SMTP Server
+        # check_verify Check if the host has SMTP Server and the email really exists:
+        self.ProgressValidEmail = ValidEmailThread(self.df, self.index, self.check_mx, self.check_verify)
         self.ProgressValidEmail.update_valid_email.connect(self.update_valid_email)
         self.ProgressValidEmail.finish_valid_email.connect(self.finish_valid_email)
         self.ProgressValidEmail.start()
 #        self.pushbutton.setEnabled(False)
 
     def update_valid_email(self, df, index):
-#        if index > 0:
-#            self.valid_count = 0
-#            self.novalid_count = 0
-#            for k, row in self.df.iterrows():
-#                print(type(df.iat[k, 1]))
-#                if df.iat[k, 1] is True:
-#                    self.valid_count += 1
-#                else:
-#                    self.novalid_count += 1
-#            self.text_log = "Валидные={0}. Не валидых={1} ".format(self.valid_count, self.novalid_count) + '\n' + self.text_log
-
         self.label_state.setText("{0} из {1}".format(index, len(df.index) - 1))
         # Запись перевода на новую строку и ответа в log память бота
         self.text_log = "Проверка email: {0} - {1} - {2} из {3}".format(df.iat[index, 0], df.iat[index, 1], index, len(df.index)-1) + '\n' + self.text_log
@@ -167,6 +166,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.file_name = QtWidgets.QFileDialog.getOpenFileName(None, "Open", "", "XLSX Files (*.xlsx);;CSV Files (*.csv);;All Files (*)")
         if self.file_name[0] != '':
             print(self.file_name[0])
+            self.pathopenfile = 'valid_' + self.file_name[0]
             self.label_path_openfile.setText(self.file_name[0])
 #            xl = pd.read_excel(self.file_name[0])
             xlsx = pd.ExcelFile(self.file_name[0])
@@ -251,6 +251,27 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # Количество строк DataFrame len(self.df.index)-1
         self.label_state.setText("{0} из {1}".format(self.index, len(self.df.index) - 1))
 
+    #Обработка CheckBox
+    def selectBooks(self, check, checkBox):
+        toggle = checkBox.isChecked()
+        if toggle:# == QtCore.Qt.Checked:
+            print('toggle=`{}`, checked'.format(toggle))
+            # if no == 1:
+            check = 1
+            print('checked_{} -> галочка поставлена выполнилось действие'.format(check))
+        else:
+            check = 0
+            print('toggle=`{}`, unchecked_{}'.format(toggle, check))
+
+        s1 = checkBox.text()
+        s = re.sub(r'_\d', '', s1)
+        checkBox.setText("{0}_{1}".format(s, check))
+        # checkBox_check_mx.setText("check_mx_{0}".format(self.check_mx))
+        # if no == 2:
+        #     self.checkBox_verify.setText("checkBox_verify__{0}".format(self.check_verify))
+
+
+
 class PandasModel(QAbstractTableModel):
 
     def __init__(self, data):
@@ -281,17 +302,23 @@ class ValidEmailThread(QThread):
     update_valid_email = pyqtSignal(DataFrame, int)
     finish_valid_email = pyqtSignal()
 
-    def __init__(self, df, index, paren = None):
+    #check_mx Checking domain has SMTP Server
+    #check_verify Check if the host has SMTP Server and the email really exists:
+    def __init__(self, df, index, chex_mx, check_verify, paren = None):
         super().__init__()
         self.df = df
         self.index = index
+        self.check_mx = chex_mx
+        self.check_verify = check_verify
+        print('check verify {}'.format(self.check_verify))
+        print('check mx {}'.format(self.check_mx))
 
     def run(self):
         self.df['Validate'] = False
         self.startTime = datetime.now()
         if len(self.df.index) > 1:
             for k, row in self.df.iterrows():
-                self.is_valid = validate_email(self.df.iat[k, 0], verify=True, smtp_timeout=5, check_mx=True)
+                self.is_valid = validate_email(self.df.iat[k, 0], verify=self.check_verify, smtp_timeout=5, check_mx=True)
 #                print("valid = {0}-{1}".format(self.is_valid, type(self.is_valid)))
                 self.df.iat[k, 1] = self.is_valid
                 self.index = k
@@ -311,6 +338,8 @@ class ValidEmailThread(QThread):
         print("Конец выполнения: {0}".format(self.endTime))
         print("Время выполнения: {0}".format(self.endTime - self.startTime))
         self.finish_valid_email.emit()
+
+
 
 def main():
 

@@ -11,18 +11,7 @@ import re
 df = pd.DataFrame
 
 def save_table_to_excel(list_catalog_number = [], list_feauture = [], list_pruduct = [], list_price_discount = []):
-    # Specify a writer
 
-#    df['list_catalog_number'] = False
-#    df['list_feauture'] = Fa
-#    df['list_pruduct'] = False
-#    df['list_price_discount'] = False
-    for i in range(0, len(list_catalog_number)):
-        df.iat[i, 'list_catalog_number'] = list_catalog_number[i]
-        df.iat[i, 1] = list_feauture[i]
-        df.iat[i, 2] = list_pruduct[i]
-        df.iat[i, 3] = list_price_discount[i]
-#    model = PandasModel(df)
     path = 'DKS.xlsx'
     writer = pd.ExcelWriter(path, engine='xlsxwriter')
 
