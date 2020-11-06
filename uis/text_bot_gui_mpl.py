@@ -139,6 +139,8 @@ class Ui_MainWindow(object):
         self.checkBox_verify.setText(_translate("MainWindow", "verify_SMTP_Email"))
         self.label_state.setText(_translate("MainWindow", "TextLabel"))
         self.label_path_openfile.setText(_translate("MainWindow", "TextLabel"))
+        self.pushButton_update.setToolTip(_translate("MainWindow", "Обработать открытый файл, после окончания проверки автоматически сохранится в каталоге приложения с Valid_*.xlsx"))
         self.pushButton_update.setText(_translate("MainWindow", "Обработать"))
         self.pushButton_save.setText(_translate("MainWindow", "Сохранить"))
+        self.BtnOpenFile.setToolTip(_translate("MainWindow", "Открываем файл *.xlsx для валидации email(все адреса в столбце 1)"))
         self.BtnOpenFile.setText(_translate("MainWindow", "Открыть файл"))

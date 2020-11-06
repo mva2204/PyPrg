@@ -173,6 +173,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 #            xl = pd.read_excel(self.file_name[0])
             xlsx = pd.ExcelFile(self.file_name[0])
             self.df = pd.read_excel(xlsx)
+
+            # Добавляем вначало заголовок
+            self.df['Validate'] = False
+            self.df.shift(1)
+            self.df.iat[0, 0] = list(self.df)[0]
+            self.df.columns = ['Adress', 'Validate']
+
             self.zagolovok = self.df.head()
             print('Sheet name:{0}'.format(xlsx.sheet_names))
             print('заголовок:{0}'.format(self.df.head()))
@@ -317,7 +324,14 @@ class ValidEmailThread(QThread):
         print('check mx {}'.format(self.check_mx))
 
     def run(self):
-        self.df['Validate'] = False
+        # #Добавляем вначало заголовок
+        # self.df.shift(1)
+        # self.df.iat[0,0] = list(self.df)[0]
+        # self.df.columns = ['Adress','Validate']
+        # self.df.iat[0,1] = 'Valid'
+        # #добавляем второй столбец значения валидации
+        # self.df['Validate'] = False
+        #Запоминаем налало проверки
         self.startTime = datetime.now()
         if len(self.df.index) > 1:
             for k, row in self.df.iterrows():
@@ -329,6 +343,7 @@ class ValidEmailThread(QThread):
                 print("Проверка email: {0} - {1} - {2} - {3} из {4}".format(self.df.iat[k, 0], k,
                                                                             self.df.iat[k, 1], self.is_valid,
                                                                             len(self.df.index) - 1))
+
 
 #        for self.index, row in self.df.iterrows():
 #            self.is_valid = validate_email(self.df.iat[self.index, 0], verify=True, smtp_timeout=3, check_mx=True)

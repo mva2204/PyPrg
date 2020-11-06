@@ -195,6 +195,9 @@
        <layout class="QHBoxLayout" name="horizontalLayout_3">
         <item>
          <widget class="QPushButton" name="pushButton_update">
+          <property name="toolTip">
+           <string>Обработать открытый файл, после окончания проверки автоматически сохранится в каталоге приложения с Valid_*.xlsx</string>
+          </property>
           <property name="text">
            <string>Обработать</string>
           </property>
@@ -214,6 +217,9 @@
             <width>16777215</width>
             <height>16777215</height>
            </size>
+          </property>
+          <property name="toolTip">
+           <string>Открываем файл *.xlsx для валидации email(все адреса в столбце 1)</string>
           </property>
           <property name="text">
            <string>Открыть файл</string>
