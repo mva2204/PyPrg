@@ -9,7 +9,7 @@ import re
 import cssutils
 import json
 import xlsxwriter
-
+from requests_html import HTMLSession
 
 
 df = pd.DataFrame
@@ -85,7 +85,7 @@ def save_to_excel(namefile, ws, list_catalog_number = [], list_feauture = [], li
 
     # Create a workbook and add a worksheet.
     # Create a Pandas Excel writer using XlsxWriter as the engine.
-    name_xlsx = namefile.split('.')[0] + '.xlsx'
+    name_xlsx = './pareser/' + namefile.split('.')[0] + '.xlsx'
     writer = pd.ExcelWriter(name_xlsx, engine='xlsxwriter')
 
     # Convert the dataframe to an XlsxWriter Excel object.
@@ -168,47 +168,89 @@ def get_link(namefile, wb, html, icur = 1):
     save_to_excel(namefile, wb, list_catalog_number, list_feauture, list_price_discount, catalog_item_price, list_img,  icur)
     return len(list_catalog_number)
 
+#Получаем весь список ссылок со страницы по div с class
+def get_list_href(flag_site_htmlfile, html, namefile, div_class='borders3'):
+    # Создается объект BeautifulSoup.Данные передаются конструктору.Вторая опция
+    # уточняет объект  парсинга.
+    soup = BeautifulSoup(html, 'lxml')
+    mylist = get_data(soup, 'a', "cablink")
+
+    #Убираем запрещенные символы для наименования файла /
+    list_href_namefile1 = [str(x).replace('/', '_') if '/' in x else x for x in mylist]
+    list_href_namefile = [str(x).replace('"', '') if '"' in x else x for x in list_href_namefile1]
+    print(list_href_namefile)
 
 
-namefile = 'Измерение температуры'
-name_get_html = 'https://adventa.su/ru/stocklist/70334'
+    soup = BeautifulSoup(html, "html.parser")
+    list_href1 = soup.findAll('a', {"class": "cablink"})
+    list_href = []
 
-#0 - скачанный htmlfile, Если  namefile = 'Аналоговые входы ADVENTA.html' должен лежать в корне программы
+    for link in list_href1:
+        list_href.append('https://adventa.su' + link.get('href'))
+        print(link.get('href'))
+
+    print(list_href)
+
+
+    #Каталожный номер получаем
+    # list_href = get_data(soup, 'a', div_class)
+    # print('list_href = {}'.format(list_href))
+    # print('list_hrefх = {}'.format(list_href[0]))
+    # print('list_hrefх = {}'.format(list_href[2]))
+    for x in range(0, len(list_href)):
+        parse_html(list_href_namefile[x], list_href[x], flag_site_htmlfile)
+
+def parse_html(namefile, html, flag_site_or_htmlfile):
+
+    # Create a workbook and add a worksheet.
+    # if len(namefile) > 30:#xlsxwriter.exceptions.InvalidWorksheetName: Excel worksheet name 'Модули дискретных входов ADVENTA' must be <= 31 chars.
+    #     name_xlsx = namefile[0:29]
+    # else:
+    name_xlsx = namefile.split('.')[0] + '.xlsx'
+    wb = xlsxwriter.Workbook(name_xlsx)
+
+    path = namefile
+
+    adr = 1
+    icuri = 1
+    # Тут прописываем нужный файл для парсинга с Адвенты. Приходится в firefox полностью
+    # открывать нужную страницу путем нажатия "Показать еще" и сохранять потом в файл и его парсить
+    ##########################################################
+
+    # 0 - скачанный htmlfile, Если  namefile = 'Аналоговые входы ADVENTA.html' должен лежать в корне программы
+    if not flag_site_or_htmlfile:
+        # Чтение из сохраненного файла
+        f_o = open(namefile, encoding="utf8")
+        f_read = f_o.read()
+        # print(f_read)
+        get_link(namefile, wb, f_read, icuri)
+
+    # 1 - ссылка на сайт, то namefile = 'Аналоговые входы ADVENTA' присваивается название для excel
+    # и ниже прописывается путь к парсируемому сайту     get_link(namefile, wb, get_html('https://adventa.su/ru/stocklist/70274'), icuri)
+    else:
+        get_link(namefile, wb, get_html(html), icuri)
+
+    # while adr <= 6:
+    #     leni = get_link(ws, wb, get_html('https://www.tesli.com/catalog/nvo/promyshlennaya-avtomatizatsiya/bloki-pitaniya/?PAGEN_1='+str(adr)), icuri)
+    #     adr = adr + 1
+    #     icuri = icuri + leni
+    #     print('https://www.elcomspb.ru/retail/thermotechnics/heaters/?page='+str(adr))
+
+
+namefile = 'Модули инверторов, SafeMC (двухосевые модули) ADVENTA.html'#Если парсим скачанный HTML файл в корне программы
+name_get_html = 'https://adventa.su/ru/stocklist/90014'
+
+# ВНИМАНИЕ!!!!
+# 0 - скачанный htmlfile, Если  namefile = 'Аналоговые входы ADVENTA.html' должен лежать в корне программы
 # 1 - ссылка на сайт, то namefile = 'Аналоговые входы ADVENTA' присваивается название для excel
-#и ниже прописывается путь к парсируемому сайту     get_link(namefile, wb, get_html('https://adventa.su/ru/stocklist/70274'), icuri)
+# и ниже прописывается путь к парсируемому сайту     get_link(namefile, wb, get_html('https://adventa.su/ru/stocklist/70274'), icuri)
 flag_site_or_htmlfile = 1
-
-
-# Create a workbook and add a worksheet.
-# if len(namefile) > 30:#xlsxwriter.exceptions.InvalidWorksheetName: Excel worksheet name 'Модули дискретных входов ADVENTA' must be <= 31 chars.
-#     name_xlsx = namefile[0:29]
-# else:
-name_xlsx = namefile.split('.')[0]+'.xlsx'
-wb = xlsxwriter.Workbook(name_xlsx)
-
-path = namefile
-
-adr = 1
-icuri = 1
-# Тут прописываем нужный файл для парсинга с Адвенты. Приходится в firefox полностью
-# открывать нужную страницу путем нажатия "Показать еще" и сохранять потом в файл и его парсить
-##########################################################
-
-#0 - скачанный htmlfile, Если  namefile = 'Аналоговые входы ADVENTA.html' должен лежать в корне программы
-if not flag_site_or_htmlfile:
-    # Чтение из сохраненного файла
-    f_o =open(namefile, encoding="utf8")
-    f_read= f_o.read()
-    # print(f_read)
-    get_link(namefile, wb, f_read, icuri)
-
-# 1 - ссылка на сайт, то namefile = 'Аналоговые входы ADVENTA' присваивается название для excel
-#и ниже прописывается путь к парсируемому сайту     get_link(namefile, wb, get_html('https://adventa.su/ru/stocklist/70274'), icuri)
+if flag_site_or_htmlfile:
+    #Получаем весь список ссылок со страницы по div с class
+    get_list_href(flag_site_or_htmlfile, get_html(name_get_html), namefile, div_class='cablink')
 else:
-    get_link(namefile, wb, get_html(name_get_html), icuri)
+    #Если работаем только с одной страницей
+    parse_html(namefile, name_get_html, flag_site_or_htmlfile)
 
-# while adr <= 6:
-#     leni = get_link(ws, wb, get_html('https://www.tesli.com/catalog/nvo/promyshlennaya-avtomatizatsiya/bloki-pitaniya/?PAGEN_1='+str(adr)), icuri)
-#     adr = adr + 1
-#     icuri = icuri + leni
-#     print('https://www.elcomspb.ru/retail/thermotechnics/heaters/?page='+str(adr))
+
+

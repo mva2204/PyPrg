@@ -1,1 +1,0 @@
-class adress_book():
