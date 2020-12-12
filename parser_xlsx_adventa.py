@@ -236,9 +236,12 @@ class Adventa_parser(object):
 
 
 
-def main():
+def main(adr=''):
     namefile = 'Реле промышленной серии и реле для печатного монтажа (EMR_SSR) ADVENTA.html'#Если парсим скачанный HTML файл в корне программы
-    name_get_html = 'https://adventa.su/ru/stocklist/3'
+    if adr !='':
+        name_get_html = adr
+    else:
+        name_get_html = 'https://adventa.su/ru/stocklist/3'
 
     # ВНИМАНИЕ!!!!
     # 0 - скачанный htmlfile, Если  namefile = 'Аналоговые входы ADVENTA.html' должен лежать в корне программы
@@ -252,6 +255,8 @@ def main():
     else:
         #Если работаем только с одной страницей
         adventa_parser.parse_html(namefile, name_get_html, flag_site_or_htmlfile)
+
+
 
 
 if __name__ == "__main__":
